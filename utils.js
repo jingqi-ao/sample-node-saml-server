@@ -15,9 +15,22 @@ async function parseIdPMetadataUrl(metadataUrl) {
 
     const idpCert = parsedXml['md:EntityDescriptor']['md:IDPSSODescriptor']['md:KeyDescriptor']['ds:KeyInfo']['ds:X509Data']['ds:X509Certificate'];
 
+    // This is an array
+    const singleSignOnServices = parsedXml['md:EntityDescriptor']['md:IDPSSODescriptor']['md:SingleSignOnService'];
+    let entryPoint = null;
+    for (let i = 0; i < singleSignOnServices.length; i++) {
+        const singleSignOnService = singleSignOnServices[i];
+        // We only use the HTTP-Redirect endpoint for SSO
+        if (singleSignOnService['@_Binding'].includes('HTTP-Redirect')) {
+            entryPoint = singleSignOnService['@_Location'];
+            break;
+        }
+    }
+
     return {
         issuer,
         idpCert,
+        entryPoint,
     }
 }
 
